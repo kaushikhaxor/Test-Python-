@@ -21,8 +21,6 @@ I'm your best bot, here to help you with file conversions. 😎
    - PNG to H
    - H to PNG
 
-🔄 Use /convert to get started.
-
 💬 Need Help: @Mrkaushikhaxor
 
 ✅ Join here: https://t.me/KaushikCracking to stay connected!
@@ -35,16 +33,16 @@ async def handle_keyboard_selection(update: Update, context: ContextTypes.DEFAUL
     user_choice = update.message.text  # Capture the button text clicked by the user
 
     # Respond based on the button pressed
-    if user_choice == "🚀 TTF to H":
+    if user_choice == "TTF to H":
         context.user_data["conversion_type"] = "ttf_to_h"
         await update.message.reply_text("You selected: TTF to H.\nPlease upload your TTF file to proceed.")
-    elif user_choice == "🚀 H to TTF":
+    elif user_choice == "H to TTF":
         context.user_data["conversion_type"] = "h_to_ttf"
         await update.message.reply_text("You selected: H to TTF.\nPlease upload your H file to proceed.")
-    elif user_choice == "🚀 PNG to H":
+    elif user_choice == "PNG to H":
         context.user_data["conversion_type"] = "png_to_h"
         await update.message.reply_text("You selected: PNG to H.\nPlease upload your PNG file to proceed.")
-    elif user_choice == "🚀 H to PNG":
+    elif user_choice == "H to PNG":
         context.user_data["conversion_type"] = "h_to_png"
         await update.message.reply_text("You selected: H to PNG.\nPlease upload your H file to proceed.")
     else:
