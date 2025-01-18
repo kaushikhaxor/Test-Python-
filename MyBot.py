@@ -4,10 +4,10 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, ContextTypes, MessageHandler, filters
 
 # Replace with your bot token
-BOT_TOKEN = "7796219770:AAGfV11YB4YbuTSZFDLODbt7BJo4qaNfpbE"
+BOT_TOKEN = "BOT_TOKEN"
 
 # User nickname (can be dynamically set if desired)
-USER_NICKNAME = "BestFriend"  # You can update this manually or dynamically
+USER_NICKNAME = "KAUSHIK"
 
 # Function to handle the /start command with the customized message
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
