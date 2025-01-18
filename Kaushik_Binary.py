@@ -30,34 +30,26 @@ I'm your best bot, here to help you with file conversions. 😎
 Enjoy the experience!'''
     await update.message.reply_text(response)
 
-# Function to handle the /convert command and show the selection panel
-async def convert(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    keyboard = [
-        [
-            InlineKeyboardButton("TTF to H", callback_data="ttf_to_h"),
-            InlineKeyboardButton("H to TTF", callback_data="h_to_ttf"),
-        ],
-        [
-            InlineKeyboardButton("PNG to H", callback_data="png_to_h"),
-            InlineKeyboardButton("H to PNG", callback_data="h_to_png"),
-        ],
-    ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    await update.message.reply_text("📂 Choose a conversion type below:", reply_markup=reply_markup)
+# Function to handle user responses from the keyboard
+async def handle_keyboard_selection(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    user_choice = update.message.text  # Capture the button text clicked by the user
 
-# Function to handle selection from the panel
-async def handle_selection(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    query = update.callback_query
-    await query.answer()
+    # Respond based on the button pressed
+    if user_choice == "🚀 TTF to H":
+        context.user_data["conversion_type"] = "ttf_to_h"
+        await update.message.reply_text("You selected: TTF to H.\nPlease upload your TTF file to proceed.")
+    elif user_choice == "🚀 H to TTF":
+        context.user_data["conversion_type"] = "h_to_ttf"
+        await update.message.reply_text("You selected: H to TTF.\nPlease upload your H file to proceed.")
+    elif user_choice == "🚀 PNG to H":
+        context.user_data["conversion_type"] = "png_to_h"
+        await update.message.reply_text("You selected: PNG to H.\nPlease upload your PNG file to proceed.")
+    elif user_choice == "🚀 H to PNG":
+        context.user_data["conversion_type"] = "h_to_png"
+        await update.message.reply_text("You selected: H to PNG.\nPlease upload your H file to proceed.")
+    else:
+        await update.message.reply_text("Unknown option selected. Please try again.")
 
-    # Save the selected conversion type
-    context.user_data["conversion_type"] = query.data
-
-    # Modify the popup message to be more professional
-    await query.edit_message_text(
-        f"You've selected: {query.data.replace('_', ' ').title()}\n\n"
-        "📤 Please upload the file you wish to convert. Our bot will handle the rest for you."
-    )
 
 # Function to handle file uploads
 async def handle_file(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -65,7 +57,7 @@ async def handle_file(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
     conversion_type = context.user_data.get("conversion_type")
 
     if not conversion_type:
-        await update.message.reply_text("Please use /convert to select a conversion type first.")
+        await update.message.reply_text("Please select a conversion type first using the keyboard.")
         return
 
     # Process based on the selected conversion type
@@ -79,6 +71,7 @@ async def handle_file(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
         await process_file(update, context, document, ".h", ".png", convert_h_to_png)
     else:
         await update.message.reply_text("⚠️ Invalid file for the selected conversion type. Please upload the correct file.")
+
 
 # Generic function to process file conversions with animation
 async def process_file(update, context, document, input_ext, output_ext, conversion_func):
