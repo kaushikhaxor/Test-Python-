@@ -129,23 +129,60 @@ async def process_file(update, context, document, input_ext, output_ext, convers
 
     except Exception as e:
         await update.message.reply_text(f"❌ An error occurred: {e}")
-
-# Functions for specific conversions
+#ttf > .h
 def convert_ttf_to_h(input_path: str, output_path: str) -> None:
-    # Conversion logic
-    pass
+    # Open the TTF file in binary mode
+    with open(input_path, "rb") as ttf_file, open(output_path, "w") as h_file:
+        # Write the header information
+        h_file.write("// MADE BY KAUSHIK\n")
+        h_file.write("// ANY PROBLEM DM @Mrkaushikhaxor AT TELEGRAM\n\n")
+        
+        # Read the TTF file in chunks of 4 bytes (32-bit values)
+        ttf_data = ttf_file.read()
+
+        # Calculate the size (in bytes) and the number of 32-bit values
+        size = len(ttf_data)
+        num_elements = size // 4  # Each element is 4 bytes (32-bit)
+
+        # Write the size and data array to the .h file
+        h_file.write(f"static const unsigned int KAUSHIK_size = {size};\n")
+        h_file.write(f"static const unsigned int KAUSHIK_data[{num_elements}] = {{\n")
+
+        # Iterate over the TTF data, breaking it into 4-byte chunks and writing in the required format
+        for i in range(0, size, 4):
+            # Read a 4-byte chunk
+            chunk = ttf_data[i:i+4]
+            # Convert to a 32-bit integer
+            value = int.from_bytes(chunk, byteorder='big')  # Adjust byte order if needed
+            h_file.write(f"    0x{value:08X},\n")
+
+        # Close the array declaration
+        h_file.write("};\n")
+
 
 def convert_h_to_ttf(input_path: str, output_path: str) -> None:
-    # Conversion logic
-    pass
+    with open(input_path, "r") as h_file, open(output_path, "wb") as ttf_file:
+        for line in h_file:
+            if "0x" in line:
+                bytes_data = bytes(int(byte, 16) for byte in line.strip().split(",") if "0x" in byte)
+                ttf_file.write(bytes_data)
 
 def convert_png_to_h(input_path: str, output_path: str) -> None:
-    # Conversion logic
-    pass
+    with open(input_path, "rb") as png_file, open(output_path, "w") as  h_file:
+        h_file.write(f"// Converted from {input_path}\n")
+        h_file.write(f"// MADE BY KAUSHIK\n")
+        h_file.write(f"// ANY PROBLEM DM @Mrkaushikhaxor AT TELEGRAM\n\n")
+        h_file.write("const unsigned char image_data[] = {\n")
+        while chunk := png_file.read(16):
+            h_file.write(", ".join(f"0x{byte:02X}" for byte in chunk) + ",\n")
+        h_file.write("};\n")
 
 def convert_h_to_png(input_path: str, output_path: str) -> None:
-    # Conversion logic
-    pass
+    with open(input_path, "r") as h_file, open(output_path, "wb") as png_file:
+        for line in h_file:
+            if "0x" in line:
+                bytes_data = bytes(int(byte, 16) for byte in line.strip().split(",") if "0x" in byte)
+                png_file.write(bytes_data)
 
 # Main function to set up and run the bot
 def main():
