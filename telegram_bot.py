@@ -157,9 +157,9 @@ def convert_h_to_ttf(input_path: str, output_path: str) -> None:
 
 def convert_png_to_h(input_path: str, output_path: str) -> None:
     with open(input_path, "rb") as png_file, open(output_path, "w") as  
+        h_file.write(f"// Converted from {input_path}\n")
         h_file.write("// MADE BY KAUSHIK\n")
         h_file.write("// ANY PROBLEM DM @Mrkaushikhaxor AT TELEGRAM\n\n")
-        h_file.write(f"// Converted from {input_path}\n")
         h_file.write("const unsigned char image_data[] = {\n")
         while chunk := png_file.read(16):
             h_file.write(", ".join(f"0x{byte:02X}" for byte in chunk) + ",\n")
