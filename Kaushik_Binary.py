@@ -4,7 +4,7 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, ContextTypes, MessageHandler, filters
 
 # Replace with your bot token
-BOT_TOKEN = "BOT_TOKEN"#Add Bot Token Else Give Err
+BOT_TOKEN = "7796219770:AAGfV11YB4YbuTSZFDLODbt7BJo4qaNfpbE"#Add Bot Token Else Give Err
 
 # User nickname (can be dynamically set if desired)
 USER_NICKNAME = "KAUSHIK"
