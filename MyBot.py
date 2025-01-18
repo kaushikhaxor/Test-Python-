@@ -184,7 +184,7 @@ def main():
     app.add_handler(MessageHandler(filters.Document.ALL, handle_file))
 
     # Run the bot
-    print("Bot is running...")
+    print("Kaushik Binary Bot is running...")
     app.run_polling()
 
 if __name__ == "__main__":
