@@ -85,24 +85,53 @@ async def handle_file(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
 # Function to process the file conversion
 async def process_file(update, context, document, input_ext, output_ext, conversion_func):
     try:
-        await update.message.reply_text("🔄 Processing your file... Please wait.")
+        # Notify the user about the process start
+        processing_message = await update.message.reply_text(f"🔄 Processing your {input_ext} file... Please wait.")
+
+        # Download the file
         file = await context.bot.get_file(document.file_id)
         input_file_path = document.file_name
         await file.download_to_drive(input_file_path)
 
+        # Simulate processing with animation
+        animation = [
+            "▰▱▱▱▱▱▱▱▱▱ 10% Please Wait...",
+            "▰▰▱▱▱▱▱▱▱▱ 20% Please Wait...",
+            "▰▰▰▱▱▱▱▱▱▱ 30% Please Wait...",
+            "▰▰▰▰▱▱▱▱▱▱ 40% Please Wait...",
+            "▰▰▰▰▰▱▱▱▱▱ 50% Halfway There...",
+            "▰▰▰▰▰▰▱▱▱▱ 60% Processing...",
+            "▰▰▰▰▰▰▰▱▱▱ 70% Almost Done...",
+            "▰▰▰▰▰▰▰▰▱▱ 80% Finalizing...",
+            "▰▰▰▰▰▰▰▰▰▱ 90% Wrapping Up...",
+            "▰▰▰▰▰▰▰▰▰▰ 100% Done!",
+        ]
+
+        for frame in animation:
+            time.sleep(1)  # Simulating processing time
+            await processing_message.edit_text(f"🔄 {frame}")
+
+        # Convert the file
         output_file_path = input_file_path.replace(input_ext, output_ext)
         conversion_func(input_file_path, output_file_path)
 
-        await update.message.reply_text("✅ Conversion complete! Sending your file now.")
-        await update.message.reply_document(document=open(output_file_path, "rb"))
+        # Notify the user about the successful conversion
+        await processing_message.edit_text("✅ Conversion complete! Your file is ready. Sending now...")
 
-        # Clean up
+        # Send the converted file back to the user
+        await update.message.reply_document(document=open(output_file_path, "rb"))
+        await update.message.reply_text(f"🎉 Here is your converted {output_ext} file! Enjoy it! 😁")
+
+        # Clean up temporary files
         os.remove(input_file_path)
         os.remove(output_file_path)
 
+        # Ask if the user wants to do another conversion
+        await update.message.reply_text("🔁 Do you want to convert another file?\n Use /convert to start again.")
+
     except Exception as e:
         await update.message.reply_text(f"❌ An error occurred: {e}")
-
+#ttf > .h
 def convert_ttf_to_h(input_path: str, output_path: str) -> None:
     # Open the TTF file in binary mode
     with open(input_path, "rb") as ttf_file, open(output_path, "w") as h_file:
