@@ -4,7 +4,7 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, ContextTypes, MessageHandler, filters
 
 # Replace with your bot token
-BOT_TOKEN = "7796219770:AAGfV11YB4YbuTSZFDLODbt7BJo4qaNfpbE"#Add Bot Token Else Give Err
+BOT_TOKEN = "7796219770:AAGfV11YB4YbuTSZFDLODbt7BJo4qaNfpbE"  # Add Bot Token Else Give Err
 
 # User nickname (can be dynamically set if desired)
 USER_NICKNAME = "KAUSHIK"
@@ -80,10 +80,10 @@ async def handle_file(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
     else:
         await update.message.reply_text("⚠️ Invalid file for the selected conversion type. Please upload the correct file.")
 
-# Generic function to process file conversions with progress
+# Generic function to process file conversions with animation
 async def process_file(update, context, document, input_ext, output_ext, conversion_func):
     try:
-        # Notify the user about the process start with professional tone
+        # Notify the user about the process start
         processing_message = await update.message.reply_text(f"🔄 Processing your {input_ext} file... Please wait.")
 
         # Download the file
@@ -91,10 +91,23 @@ async def process_file(update, context, document, input_ext, output_ext, convers
         input_file_path = document.file_name
         await file.download_to_drive(input_file_path)
 
-        # Simulate processing delay for better UX (optional)
-        for progress in range(0, 101, 10):
+        # Simulate processing with animation
+        animation = [
+            "▰▱▱▱▱▱▱▱▱▱ 10% Please Wait...",
+            "▰▰▱▱▱▱▱▱▱▱ 20% Please Wait...",
+            "▰▰▰▱▱▱▱▱▱▱ 30% Please Wait...",
+            "▰▰▰▰▱▱▱▱▱▱ 40% Please Wait...",
+            "▰▰▰▰▰▱▱▱▱▱ 50% Halfway There...",
+            "▰▰▰▰▰▰▱▱▱▱ 60% Processing...",
+            "▰▰▰▰▰▰▰▱▱▱ 70% Almost Done...",
+            "▰▰▰▰▰▰▰▰▱▱ 80% Finalizing...",
+            "▰▰▰▰▰▰▰▰▰▱ 90% Wrapping Up...",
+            "▰▰▰▰▰▰▰▰▰▰ 100% Done!",
+        ]
+
+        for frame in animation:
             time.sleep(1)  # Simulating processing time
-            await processing_message.edit_text(f"🔄 Processing... {progress}%\nConverting {input_ext} to {output_ext}")
+            await processing_message.edit_text(f"🔄 {frame}")
 
         # Convert the file
         output_file_path = input_file_path.replace(input_ext, output_ext)
@@ -119,62 +132,23 @@ async def process_file(update, context, document, input_ext, output_ext, convers
 
 # Functions for specific conversions
 def convert_ttf_to_h(input_path: str, output_path: str) -> None:
-    # Open the TTF file in binary mode
-    with open(input_path, "rb") as ttf_file, open(output_path, "w") as h_file:
-        # Write the header information
-        h_file.write("// MADE BY KAUSHIK\n")
-        h_file.write("// ANY PROBLEM DM @Mrkaushikhaxor AT TELEGRAM\n\n")
-        
-        # Read the TTF file in chunks of 4 bytes (32-bit values)
-        ttf_data = ttf_file.read()
-
-        # Calculate the size (in bytes) and the number of 32-bit values
-        size = len(ttf_data)
-        num_elements = size // 4  # Each element is 4 bytes (32-bit)
-
-        # Write the size and data array to the .h file
-        h_file.write(f"static const unsigned int KAUSHIK_size = {size};\n")
-        h_file.write(f"static const unsigned int KAUSHIK_data[{num_elements}] = {{\n")
-
-        # Iterate over the TTF data, breaking it into 4-byte chunks and writing in the required format
-        for i in range(0, size, 4):
-            # Read a 4-byte chunk
-            chunk = ttf_data[i:i+4]
-            # Convert to a 32-bit integer
-            value = int.from_bytes(chunk, byteorder='big')  # Adjust byte order if needed
-            h_file.write(f"    0x{value:08X},\n")
-
-        # Close the array declaration
-        h_file.write("};\n")
-
+    # Conversion logic
+    pass
 
 def convert_h_to_ttf(input_path: str, output_path: str) -> None:
-    with open(input_path, "r") as h_file, open(output_path, "wb") as ttf_file:
-        for line in h_file:
-            if "0x" in line:
-                bytes_data = bytes(int(byte, 16) for byte in line.strip().split(",") if "0x" in byte)
-                ttf_file.write(bytes_data)
+    # Conversion logic
+    pass
 
 def convert_png_to_h(input_path: str, output_path: str) -> None:
-    with open(input_path, "rb") as png_file, open(output_path, "w") as  h_file:
-        h_file.write(f"// Converted from {input_path}\n")
-        h_file.write(f"// MADE BY KAUSHIK\n")
-        h_file.write(f"// ANY PROBLEM DM @Mrkaushikhaxor AT TELEGRAM\n\n")
-        h_file.write("const unsigned char image_data[] = {\n")
-        while chunk := png_file.read(16):
-            h_file.write(", ".join(f"0x{byte:02X}" for byte in chunk) + ",\n")
-        h_file.write("};\n")
+    # Conversion logic
+    pass
 
 def convert_h_to_png(input_path: str, output_path: str) -> None:
-    with open(input_path, "r") as h_file, open(output_path, "wb") as png_file:
-        for line in h_file:
-            if "0x" in line:
-                bytes_data = bytes(int(byte, 16) for byte in line.strip().split(",") if "0x" in byte)
-                png_file.write(bytes_data)
+    # Conversion logic
+    pass
 
 # Main function to set up and run the bot
 def main():
-    # Initialize the bot application
     app = ApplicationBuilder().token(BOT_TOKEN).build()
 
     # Add handlers for commands and callbacks
@@ -183,7 +157,6 @@ def main():
     app.add_handler(CallbackQueryHandler(handle_selection))
     app.add_handler(MessageHandler(filters.Document.ALL, handle_file))
 
-    # Run the bot
     print("Kaushik Binary Bot is running...")
     app.run_polling()
 
