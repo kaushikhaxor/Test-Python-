@@ -1,77 +1,100 @@
 import os
+import logging
 import time
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, ContextTypes, MessageHandler, filters
+import traceback
+from asyncio import sleep
+from telegram import Update, KeyboardButton, ReplyKeyboardMarkup
+from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
 
-# Replace with your bot token
-BOT_TOKEN = "7796219770:AAGfV11YB4YbuTSZFDLODbt7BJo4qaNfpbE"  # Add Bot Token Else Give Err
+BOT_TOKEN = "7796219770:AAGfV11YB4YbuTSZFDLODbt7BJo4qaNfpbE"  # Your bot token
 
-# User nickname (can be dynamically set if desired)
-USER_NICKNAME = "KAUSHIK"
+# Setup logging
+logging.basicConfig(level=logging.ERROR)
 
-# Function to handle the /start command with the customized message
+# Function to handle the /start command and display a custom keyboard
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     user_name = update.message.from_user.first_name  # Get the user's first name
-    response = f'''👋 Welcome, {user_name}!
-I'm your best bot, here to help you with file conversions. 😎
 
-📂 Choose a conversion type:
+    # Define the custom keyboard layout
+    keyboard = [
+        [KeyboardButton("🚀 TTF to H"), KeyboardButton("🚀 H to TTF")],
+        [KeyboardButton("🚀 PNG to H"), KeyboardButton("🚀 H to PNG")],
+    ]
+    reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+
+    # Welcome message
+    response = f'''👋 Welcome, {user_name}!
+I'm here to assist you with file conversions. 😎
+
+📂 Available conversions:
    - TTF to H
    - H to TTF
    - PNG to H
    - H to PNG
 
-💬 Need Help: @Mrkaushikhaxor
+💬 For assistance: @Mrkaushikhaxor
+✅ Stay updated: https://t.me/KaushikCracking
 
-✅ Join here: https://t.me/KaushikCracking to stay connected!
+Enjoy the experience! 🚀'''
 
-Enjoy the experience!'''
-    await update.message.reply_text(response)
+    await update.message.reply_text(response, reply_markup=reply_markup)
 
-# Function to handle user responses from the keyboard
+# Function to handle keyboard selections
 async def handle_keyboard_selection(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    user_choice = update.message.text  # Capture the button text clicked by the user
+    user_choice = update.message.text
 
-    # Respond based on the button pressed
-    if user_choice == "TTF to H":
-        context.user_data["conversion_type"] = "ttf_to_h"
-        await update.message.reply_text("You selected: TTF to H.\nPlease upload your TTF file to proceed.")
-    elif user_choice == "H to TTF":
-        context.user_data["conversion_type"] = "h_to_ttf"
-        await update.message.reply_text("You selected: H to TTF.\nPlease upload your H file to proceed.")
-    elif user_choice == "PNG to H":
-        context.user_data["conversion_type"] = "png_to_h"
-        await update.message.reply_text("You selected: PNG to H.\nPlease upload your PNG file to proceed.")
-    elif user_choice == "H to PNG":
-        context.user_data["conversion_type"] = "h_to_png"
-        await update.message.reply_text("You selected: H to PNG.\nPlease upload your H file to proceed.")
+    # Handle user selection
+    conversion_types = {
+        "🚀 TTF to H": "ttf_to_h",
+        "🚀 H to TTF": "h_to_ttf",
+        "🚀 PNG to H": "png_to_h",
+        "🚀 H to PNG": "h_to_png",
+    }
+
+    if user_choice in conversion_types:
+        context.user_data["conversion_type"] = conversion_types[user_choice]
+        await update.message.reply_text(f"✅ You selected: {user_choice}\n📂 Please upload your file to proceed.")
     else:
-        await update.message.reply_text("Unknown option selected. Please try again.")
+        await update.message.reply_text("⚠️ Invalid option. Please select a valid conversion type.")
 
-
-# Function to handle file uploads
+# Function to handle file uploads and initiate conversion
 async def handle_file(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     document = update.message.document
     conversion_type = context.user_data.get("conversion_type")
 
     if not conversion_type:
-        await update.message.reply_text("Please select a conversion type first using the keyboard.")
+        await update.message.reply_text(
+            "⚠️ Please select a conversion type first using the keyboard options below.",
+            reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True),
+        )
         return
 
-    # Process based on the selected conversion type
-    if conversion_type == "ttf_to_h" and document.file_name.endswith(".ttf"):
-        await process_file(update, context, document, ".ttf", ".h", convert_ttf_to_h)
-    elif conversion_type == "h_to_ttf" and document.file_name.endswith(".h"):
-        await process_file(update, context, document, ".h", ".ttf", convert_h_to_ttf)
-    elif conversion_type == "png_to_h" and document.file_name.endswith(".png"):
-        await process_file(update, context, document, ".png", ".h", convert_png_to_h)
-    elif conversion_type == "h_to_png" and document.file_name.endswith(".h"):
-        await process_file(update, context, document, ".h", ".png", convert_h_to_png)
+    # Determine valid extensions for the selected conversion
+    valid_extensions = {
+        "ttf_to_h": ".ttf",
+        "h_to_ttf": ".h",
+        "png_to_h": ".png",
+        "h_to_png": ".h",
+    }
+
+    input_ext = valid_extensions.get(conversion_type)
+    output_ext = {
+        ".ttf": ".h",
+        ".h": ".ttf",
+        ".png": ".h",
+    }.get(input_ext)
+    conversion_funcs = {
+        "ttf_to_h": convert_ttf_to_h,
+        "h_to_ttf": convert_h_to_ttf,
+        "png_to_h": convert_png_to_h,
+    }
+
+    if document.file_name.endswith(input_ext):
+        await process_file(update, context, document, input_ext, output_ext, conversion_funcs[conversion_type])
     else:
-        await update.message.reply_text("⚠️ Invalid file for the selected conversion type. Please upload the correct file.")
+        await update.message.reply_text(f"⚠️ Invalid file format. Please upload a file with the `{input_ext}` extension.")
 
-
-# Generic function to process file conversions with animation
+# Function to process the file conversion
 async def process_file(update, context, document, input_ext, output_ext, conversion_func):
     try:
         # Notify the user about the process start
@@ -84,7 +107,7 @@ async def process_file(update, context, document, input_ext, output_ext, convers
 
         # Simulate processing with animation
         animation = [
-            "▰▱▱▱▱▱▱▱▱▱ 10% Please Wait...",
+            "▰▱▱▱▱▱▱▱ 10% Please Wait...",
             "▰▰▱▱▱▱▱▱▱▱ 20% Please Wait...",
             "▰▰▰▱▱▱▱▱▱▱ 30% Please Wait...",
             "▰▰▰▰▱▱▱▱▱▱ 40% Please Wait...",
@@ -97,7 +120,7 @@ async def process_file(update, context, document, input_ext, output_ext, convers
         ]
 
         for frame in animation:
-            time.sleep(1)  # Simulating processing time
+            await sleep(1)  # Non-blocking
             await processing_message.edit_text(f"🔄 {frame}")
 
         # Convert the file
@@ -112,54 +135,55 @@ async def process_file(update, context, document, input_ext, output_ext, convers
         await update.message.reply_text(f"🎉 Here is your converted {output_ext} file! Enjoy it! 😁")
 
         # Clean up temporary files
-        os.remove(input_file_path)
-        os.remove(output_file_path)
+        if os.path.exists(input_file_path):
+            os.remove(input_file_path)
+        if os.path.exists(output_file_path):
+            os.remove(output_file_path)
 
-        # Ask if the user wants to do another conversion
-        await update.message.reply_text("🔁 Do you want to convert another file?\n Use /convert to start again.")
+        # Show the keyboard again after the conversion is done
+        keyboard = [
+            [KeyboardButton("🚀 TTF to H"), KeyboardButton("🚀 H to TTF")],
+            [KeyboardButton("🚀 PNG to H"), KeyboardButton("🚀 H to PNG")],
+        ]
+        reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+        await update.message.reply_text("🔁 You can select another conversion option below:", reply_markup=reply_markup)
 
     except Exception as e:
-        await update.message.reply_text(f"❌ An error occurred: {e}")
-#ttf > .h
+        logging.error(f"Error occurred: {e}\n{traceback.format_exc()}")
+        await update.message.reply_text(f"❌ An error occurred during processing: {e}")
+
+# TTF to H conversion
 def convert_ttf_to_h(input_path: str, output_path: str) -> None:
-    # Open the TTF file in binary mode
     with open(input_path, "rb") as ttf_file, open(output_path, "w") as h_file:
-        # Write the header information
         h_file.write("// MADE BY KAUSHIK\n")
         h_file.write("// ANY PROBLEM DM @Mrkaushikhaxor AT TELEGRAM\n\n")
-        
-        # Read the TTF file in chunks of 4 bytes (32-bit values)
         ttf_data = ttf_file.read()
-
-        # Calculate the size (in bytes) and the number of 32-bit values
         size = len(ttf_data)
-        num_elements = size // 4  # Each element is 4 bytes (32-bit)
-
-        # Write the size and data array to the .h file
+        num_elements = size // 4
         h_file.write(f"static const unsigned int KAUSHIK_size = {size};\n")
         h_file.write(f"static const unsigned int KAUSHIK_data[{num_elements}] = {{\n")
 
-        # Iterate over the TTF data, breaking it into 4-byte chunks and writing in the required format
         for i in range(0, size, 4):
-            # Read a 4-byte chunk
-            chunk = ttf_data[i:i+4]
-            # Convert to a 32-bit integer
-            value = int.from_bytes(chunk, byteorder='big')  # Adjust byte order if needed
+            chunk = ttf_data[i:i + 4]
+            value = int.from_bytes(chunk, byteorder='big')
             h_file.write(f"    0x{value:08X},\n")
 
-        # Close the array declaration
         h_file.write("};\n")
 
-
+# H to TTF conversion
 def convert_h_to_ttf(input_path: str, output_path: str) -> None:
     with open(input_path, "r") as h_file, open(output_path, "wb") as ttf_file:
         for line in h_file:
             if "0x" in line:
-                bytes_data = bytes(int(byte, 16) for byte in line.strip().split(",") if "0x" in byte)
-                ttf_file.write(bytes_data)
+                hex_values = [
+                    int(value, 16) for value in line.strip().split(",") if "0x" in value
+                ]
+                for value in hex_values:
+                    ttf_file.write(value.to_bytes(4, byteorder="big"))
 
+# PNG to H conversion
 def convert_png_to_h(input_path: str, output_path: str) -> None:
-    with open(input_path, "rb") as png_file, open(output_path, "w") as  h_file:
+    with open(input_path, "rb") as png_file, open(output_path, "w") as h_file:
         h_file.write(f"// Converted from {input_path}\n")
         h_file.write(f"// MADE BY KAUSHIK\n")
         h_file.write(f"// ANY PROBLEM DM @Mrkaushikhaxor AT TELEGRAM\n\n")
@@ -168,24 +192,15 @@ def convert_png_to_h(input_path: str, output_path: str) -> None:
             h_file.write(", ".join(f"0x{byte:02X}" for byte in chunk) + ",\n")
         h_file.write("};\n")
 
-def convert_h_to_png(input_path: str, output_path: str) -> None:
-    with open(input_path, "r") as h_file, open(output_path, "wb") as png_file:
-        for line in h_file:
-            if "0x" in line:
-                bytes_data = bytes(int(byte, 16) for byte in line.strip().split(",") if "0x" in byte)
-                png_file.write(bytes_data)
-
 # Main function to set up and run the bot
 def main():
     app = ApplicationBuilder().token(BOT_TOKEN).build()
 
-    # Add handlers for commands and callbacks
     app.add_handler(CommandHandler("start", start))
-    app.add_handler(CommandHandler("convert", convert))
-    app.add_handler(CallbackQueryHandler(handle_selection))
-    app.add_handler(MessageHandler(filters.Document.ALL, handle_file))
+    app.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), handle_keyboard_selection))
+    app.add_handler(MessageHandler(filters.Document.ALL, handle_file))  # Ensure this handler is added
 
-    print("Kaushik Binary Bot is running...")
+    print("Kaushik Bot is running...")
     app.run_polling()
 
 if __name__ == "__main__":
