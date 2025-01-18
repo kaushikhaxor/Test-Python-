@@ -7,6 +7,8 @@ BOT_TOKEN = "7796219770:AAGfV11YB4YbuTSZFDLODbt7BJo4qaNfpbE"  # Your bot token
 
 # Function to handle the /start command and display a custom keyboard
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    user_name = update.message.from_user.first_name  # Get the user's first name
+
     # Define the custom keyboard layout (2 rows)
     keyboard = [
         [KeyboardButton("🚀 TTF to H"), KeyboardButton("🚀 H to TTF")],
@@ -14,11 +16,25 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     ]
     reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
 
-    await update.message.reply_text(
-        "👋 **Welcome to Kaushik's Bot!**\n\n"
-        "I can help you convert files easily. Use the options below to start your conversion journey. 🚀",
-        reply_markup=reply_markup
-    )
+    # Welcome message with user's name
+    response = f'''👋 Welcome, {user_name}!
+I'm your best bot, here to help you with file conversions. 😎
+
+📂 Choose a conversion type:
+   - TTF to H
+   - H to TTF
+   - PNG to H
+   - H to PNG
+
+💬 Need Help: @Mrkaushikhaxor
+
+✅ Join here: https://t.me/KaushikCracking to stay connected!
+
+Enjoy the experience!'''
+
+    # Send the welcome message with the custom keyboard
+    await update.message.reply_text(response, reply_markup=reply_markup)
+
 
 
 # Function to handle user responses from the keyboard
