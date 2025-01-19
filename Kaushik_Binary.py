@@ -6,14 +6,16 @@ from asyncio import sleep
 from telegram import Update, KeyboardButton, ReplyKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
 
-BOT_TOKEN = "7796219770:AAGfV11YB4YbuTSZFDLODbt7BJo4qaNfpbE"  # Your bot token
+BOT_TOKEN = "7724266159:AAHFWAoTWYim9Tcv6v049Av23jd5AMPcfts"  # Your bot token
 
 # Setup logging
 logging.basicConfig(level=logging.ERROR)
 
+
 # Function to handle the /start command and display a custom keyboard
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     user_name = update.message.from_user.first_name  # Get the user's first name
+
 
     # Define the custom keyboard layout
     keyboard = [
@@ -82,11 +84,13 @@ async def handle_file(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
         ".ttf": ".h",
         ".h": ".ttf",
         ".png": ".h",
+        ".h": ".png",
     }.get(input_ext)
     conversion_funcs = {
         "ttf_to_h": convert_ttf_to_h,
         "h_to_ttf": convert_h_to_ttf,
         "png_to_h": convert_png_to_h,
+        "h_to_png": convert_h_to_png,
     }
 
     if document.file_name.endswith(input_ext):
@@ -150,7 +154,7 @@ async def process_file(update, context, document, input_ext, output_ext, convers
 
     except Exception as e:
         logging.error(f"Error occurred: {e}\n{traceback.format_exc()}")
-        await update.message.reply_text(f"❌ An error occurred during processing: {e}")
+        await update.message.reply_text(f"❌ Network error during file download: {e}")
 
 # TTF to H conversion
 def convert_ttf_to_h(input_path: str, output_path: str) -> None:
@@ -191,6 +195,13 @@ def convert_png_to_h(input_path: str, output_path: str) -> None:
         while chunk := png_file.read(16):
             h_file.write(", ".join(f"0x{byte:02X}" for byte in chunk) + ",\n")
         h_file.write("};\n")
+def convert_h_to_png(input_path: str, output_path: str) -> None:
+    with open(input_path, "r") as h_file, open(output_path, "wb") as png_file:
+        for line in h_file:
+            if "0x" in line:
+                bytes_data = bytes(int(byte, 16) for byte in line.strip().split(",") if "0x" in byte)
+                png_file.write(bytes_data)
+
 
 # Main function to set up and run the bot
 def main():
