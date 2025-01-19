@@ -27,11 +27,9 @@ def keep_alive():
 # Setup logging
 logging.basicConfig(level=logging.ERROR)
 
-
 # Function to handle the /start command and display a custom keyboard
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     user_name = update.message.from_user.first_name  # Get the user's first name
-
 
     # Define the custom keyboard layout
     keyboard = [
@@ -83,7 +81,6 @@ async def handle_file(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
     if not conversion_type:
         await update.message.reply_text(
             "⚠️ Please select a conversion type first using the keyboard options below.",
-            reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True),
         )
         return
 
@@ -97,11 +94,11 @@ async def handle_file(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
 
     input_ext = valid_extensions.get(conversion_type)
     output_ext = {
-        ".ttf": ".h",
-        ".h": ".ttf",
-        ".png": ".h",
-        ".h": ".png",
-    }.get(input_ext)
+        "ttf_to_h": ".h",
+        "h_to_ttf": ".ttf",
+        "png_to_h": ".h",
+        "h_to_png": ".png",
+    }.get(conversion_type)
     conversion_funcs = {
         "ttf_to_h": convert_ttf_to_h,
         "h_to_ttf": convert_h_to_ttf,
@@ -109,6 +106,7 @@ async def handle_file(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
         "h_to_png": convert_h_to_png,
     }
 
+    # Validate the file extension
     if document.file_name.endswith(input_ext):
         await process_file(update, context, document, input_ext, output_ext, conversion_funcs[conversion_type])
     else:
@@ -172,7 +170,7 @@ async def process_file(update, context, document, input_ext, output_ext, convers
         logging.error(f"Error occurred: {e}\n{traceback.format_exc()}")
         await update.message.reply_text(f"❌ Network error during file download: {e}")
 
-# TTF to H conversion
+# Conversion functions
 def convert_ttf_to_h(input_path: str, output_path: str) -> None:
     with open(input_path, "rb") as ttf_file, open(output_path, "w") as h_file:
         h_file.write("// MADE BY KAUSHIK\n")
@@ -190,7 +188,6 @@ def convert_ttf_to_h(input_path: str, output_path: str) -> None:
 
         h_file.write("};\n")
 
-# H to TTF conversion
 def convert_h_to_ttf(input_path: str, output_path: str) -> None:
     with open(input_path, "r") as h_file, open(output_path, "wb") as ttf_file:
         for line in h_file:
@@ -201,7 +198,6 @@ def convert_h_to_ttf(input_path: str, output_path: str) -> None:
                 for value in hex_values:
                     ttf_file.write(value.to_bytes(4, byteorder="big"))
 
-# PNG to H conversion
 def convert_png_to_h(input_path: str, output_path: str) -> None:
     with open(input_path, "rb") as png_file, open(output_path, "w") as h_file:
         h_file.write(f"// Converted from {input_path}\n")
@@ -211,13 +207,13 @@ def convert_png_to_h(input_path: str, output_path: str) -> None:
         while chunk := png_file.read(16):
             h_file.write(", ".join(f"0x{byte:02X}" for byte in chunk) + ",\n")
         h_file.write("};\n")
+
 def convert_h_to_png(input_path: str, output_path: str) -> None:
     with open(input_path, "r") as h_file, open(output_path, "wb") as png_file:
         for line in h_file:
             if "0x" in line:
                 bytes_data = bytes(int(byte, 16) for byte in line.strip().split(",") if "0x" in byte)
                 png_file.write(bytes_data)
-
 
 # Main function to set up and run the bot
 def main():
