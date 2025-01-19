@@ -5,8 +5,24 @@ import traceback
 from asyncio import sleep
 from telegram import Update, KeyboardButton, ReplyKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
+from flask import Flask
+from threading import Thread
 
 BOT_TOKEN = "7724266159:AAHFWAoTWYim9Tcv6v049Av23jd5AMPcfts"  # Your bot token
+
+# Flask server for keep-alive
+app = Flask('')
+
+@app.route('/')
+def home():
+    return "I'm alive!"
+
+def run():
+    app.run(host='0.0.0.0', port=8080)
+
+def keep_alive():
+    t = Thread(target=run)
+    t.start()
 
 # Setup logging
 logging.basicConfig(level=logging.ERROR)
@@ -205,6 +221,7 @@ def convert_h_to_png(input_path: str, output_path: str) -> None:
 
 # Main function to set up and run the bot
 def main():
+    keep_alive()  # Start the keep-alive Flask server
     app = ApplicationBuilder().token(BOT_TOKEN).build()
 
     app.add_handler(CommandHandler("start", start))
