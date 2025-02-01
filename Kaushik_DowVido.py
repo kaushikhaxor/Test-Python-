@@ -8,14 +8,14 @@ from telegram.ext import Application, CommandHandler, MessageHandler, filters, C
 from telegram.error import TimedOut
 
 
-# ✅ Secure Telegram Bot Token (directly in the code for simplicity)
+# ✅ Created By - @Mrkaushikhaxor / kaushik
 TELEGRAM_BOT_TOKEN = "7621045054:AAHTMYYMAlFFi7genLJMkyK8wblf7JPo8E4"
 
 if not TELEGRAM_BOT_TOKEN:
     raise ValueError("❌ Error: TELEGRAM_BOT_TOKEN is missing!")
 
 
-# ✅ Instagram Shortcode Extractor
+# ✅ Created By - @Mrkaushikhaxor / kaushik
 def extract_instagram_shortcode(url):
     match = re.search(r"instagram\.com/reel/([^/?]+)", url)
     return match.group(1) if match else None
@@ -59,7 +59,7 @@ def download_youtube_shorts(url):
         return None, "❌ Failed to download YouTube Short!"
 
 
-# ✅ Start Command (Professional Welcome)
+# ✅ Created By - @Mrkaushikhaxor / kaushik
 async def start(update: Update, context: CallbackContext) -> None:
     welcome_message = """
     👋 Welcome to the Video Downloader Bot!
@@ -71,7 +71,7 @@ async def start(update: Update, context: CallbackContext) -> None:
     await update.message.reply_text(welcome_message)
 
 
-# ✅ Message Handler for Downloading
+# ✅ Created By - @Mrkaushikhaxor / kaushik
 async def handle_message(update: Update, context: CallbackContext) -> None:
     url = update.message.text
     file_path = None  # Default
@@ -108,7 +108,7 @@ async def handle_message(update: Update, context: CallbackContext) -> None:
         await update.message.reply_text(error_message or "❌ Download failed!")
 
 
-# ✅ Main Function
+# ✅ Created By - @Mrkaushikhaxor / kaushik
 def main():
     os.makedirs("downloads", exist_ok=True)  # Ensure 'downloads' folder exists
 
@@ -118,7 +118,7 @@ def main():
 
     print("✅ Kaushik Bot is running...")
     app.run_polling()
-
+# ✅ Created By - @Mrkaushikhaxor / kaushik
 
 if __name__ == "__main__":
     main()
