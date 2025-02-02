@@ -1,19 +1,21 @@
 import telebot
 from telebot.types import ReplyKeyboardMarkup, KeyboardButton
+import os
 
-# Replace with your own Bot Token
-TOKEN = '7691513668:AAF1D4yxxCwwOZN5M5J6zIJUcjNQiqDt8_U'
+# ✅ Secure way to store Bot Token
+TOKEN = os.getenv("BOT_TOKEN")  # Render pe Environment Variable se Token lega
 
+# ✅ Initialize bot
 bot = telebot.TeleBot(TOKEN)
 
 @bot.message_handler(commands=['start'])
 def start(message):
     user = message.from_user
-    nickname = user.first_name  # Use first name as nickname
+    nickname = user.first_name or "User"  # Agar naam na ho to 'User' le
 
-    # Keyboard Button बनाएं
+    # ✅ Keyboard Button Banaye
     markup = ReplyKeyboardMarkup(resize_keyboard=True)
-    about_button = KeyboardButton("ℹ️ About NeuroCraft")  # Fixed: Corrected variable name
+    about_button = KeyboardButton("ℹ️ About NeuroCraft")
     markup.add(about_button)  
 
     welcome_message = (
@@ -24,28 +26,28 @@ def start(message):
     )
     bot.send_message(message.chat.id, welcome_message, reply_markup=markup, parse_mode="Markdown")
 
-@bot.message_handler(func=lambda message: message.text == "ℹ️ About NeuroCraft")  # Fixed: Added message handler
+@bot.message_handler(func=lambda message: message.text == "ℹ️ About NeuroCraft")
 def about_info(message):
-    about_text = """🚀 Kaushik NeuroCraft  
+    about_text = """🚀 *Kaushik NeuroCraft*  
 An AI coding assistant designed to generate, debug, and optimize code effortlessly.  
 
-👨‍💻 Developer: *Kaushik (@Mrkaushikhaxor)*  
-📅 Launched: *June 25, 2023*  
-⚡ Speed: *Super Fast & Optimized*  
-🛠️ Supports: *Python, Java, C++ (more coming soon!)*  
+👨‍💻 *Developer:* Kaushik (@Mrkaushikhaxor)  
+📅 *Launched:* June 25, 2023  
+⚡ *Speed:* Super Fast & Optimized  
+🛠️ *Supports:* Python, Java, C++ (more coming soon!)  
 
-💡 Key Features:  
+💡 *Key Features:*  
 ✔ Code Generation & Debugging  
 ✔ AI-Powered Tech Assistance  
 ✔ Continuous Learning & Improvement  
 
-🌍 Upcoming: *More languages, smarter AI & web version.*  
+🌍 *Upcoming:* More languages, smarter AI & web version.  
 
 👉 *Stay tuned for updates!*"""
 
     bot.send_message(message.chat.id, about_text, parse_mode="Markdown")
 
-@bot.message_handler(func=lambda message: True)  # Handle all other messages
+@bot.message_handler(func=lambda message: True)
 def pending(message):
     pending_message = (
         "*NOTICE:*\n"
@@ -55,5 +57,6 @@ def pending(message):
     bot.send_message(message.chat.id, pending_message, parse_mode="Markdown")
 
 print("🤖 NeuroCraft is Running....")
+
 if __name__ == "__main__":
-    bot.polling(none_stop=True)
+    bot.infinity_polling()  # ✅ Continuous Polling without stopping
